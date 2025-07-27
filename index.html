@@ -73,36 +73,38 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-6 col-md-8">
-                <div class="card p-4">
-                    <div class="card-body">
-                        <div class="text-center mb-4">
-                            <h1 class="card-title fw-bold">🎟️ QR Ticket Generator Gratis</h1>
-                            <p class="text-white-50">dapatkan tiket bioskop digital  gratis Anda dalam sekejap.</p>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="movie" class="form-label">Pilih Film</label>
-                            <select class="form-select" id="movie">
-                                <option value="" selected disabled>-- Judul Film --</option>
-                                <option value="Petualangan di Negeri Awan">Petualangan di Negeri Awan</option>
-                                <option value="Kode Rahasia Gemini">Kode Rahasia Gemini</option>
-                                <option value="Malam di Bawah Bintang">Malam di Bawah Bintang</option>
-                                <option value="Sang Penjaga Hutan">Sang Penjaga Hutan</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Nama Pemesan</label>
-                            <input type="text" class="form-control" id="name" placeholder="cth: Budi Santoso">
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="quantity" class="form-label">Jumlah Tiket</label>
-                            <input type="number" class="form-control" id="quantity" value="1" min="1">
-                        </div>
-
-                        <div class="d-grid">
-                           <button class="btn btn-primary" id="generateBtn">Buat Tiket Digital Saya</button>
+                <div id="form-container">
+                    <div class="card p-4">
+                        <div class="card-body">
+                            <div class="text-center mb-4">
+                                <h1 class="card-title fw-bold">🎟️ QR Ticket Generator Gratis</h1>
+                                <p class="text-white-50">Dapatkan tiket bioskop digital gratis  dan klaim tiket gratis Anda dalam sekejap.</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="movie" class="form-label">Pilih Film:</label>
+                                <select class="form-select" id="movie">
+                                    <option value="" selected disabled>-- Judul Film --</option>
+                                    <option value="Petualangan di Negeri Awan">Petualangan di Negeri Awan</option>
+                                    <option value="Kode Rahasia Gemini">Kode Rahasia Gemini</option>
+                                    <option value="Malam di Bawah Bintang">Malam di Bawah Bintang</option>
+                                    <option value="Sang Penjaga Hutan">Sang Penjaga Hutan</option>
+                                </select>
+                            </div>
+    
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nama Pemesan:</label>
+                                <input type="text" class="form-control" id="name" placeholder="cth: Budi Santoso">
+                            </div>
+    
+                            <div class="mb-4">
+                                <label for="quantity" class="form-label">Jumlah Tiket (Maksimal 3):</label>
+                                <input type="number" class="form-control" id="quantity" value="1" min="1" max="3">
+                            </div>
+    
+                            <div class="d-grid">
+                               <button class="btn btn-primary" id="generateBtn">Klaim Tiket Gratisnya</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -116,8 +118,6 @@
 
     <script>
         // --- PENGATURAN ADMIN ---
-
-        // 1. PENGATURAN JADWAL & LOKASI FILM
         const jadwalFilm = {
             "Petualangan di Negeri Awan": { tanggal: "28 Juli 2025", jam: "19:00", bioskop: "Cinema XXI Centre Point" },
             "Kode Rahasia Gemini":       { tanggal: "29 Juli 2025", jam: "20:30", bioskop: "CGV Focal Point Medan" },
@@ -125,7 +125,6 @@
             "Sang Penjaga Hutan":       { tanggal: "31 Juli 2025", jam: "21:00", bioskop: "Cinema XXI Centre Point" }
         };
 
-        // 2. PENGATURAN GAMBAR QR
         const qrCodeImages = {
             "Petualangan di Negeri Awan": "Tiket-Ridho.png",
             "Kode Rahasia Gemini": "Tiket-Ridho.png",
@@ -135,36 +134,27 @@
         // -----------------------------
 
         document.addEventListener('DOMContentLoaded', () => {
+            const formContainer = document.getElementById('form-container');
             const generateBtn = document.getElementById('generateBtn');
+            const ticketResultDiv = document.getElementById('ticket-result');
             const movieSelect = document.getElementById('movie');
             const nameInput = document.getElementById('name');
             const quantityInput = document.getElementById('quantity');
-            const ticketResultDiv = document.getElementById('ticket-result');
-
-            generateBtn.addEventListener('click', () => {
-                const movie = movieSelect.value;
-                const name = nameInput.value.trim();
-                const quantity = parseInt(quantityInput.value);
-
-                if (!movie || !name || !quantity || quantity < 1) {
-                    alert('Harap isi semua kolom!');
-                    return;
-                }
-                
+            
+            // Fungsi untuk menampilkan tiket
+            const displayTicket = (movie, name, quantity) => {
                 const qrImageSrc = qrCodeImages[movie];
                 const jadwal = jadwalFilm[movie];
 
                 if (!qrImageSrc || !jadwal) {
-                    alert('Terjadi kesalahan: Gambar QR atau Jadwal untuk film ini tidak ditemukan.');
+                    alert('Data film tidak valid. Menghapus data lama.');
+                    localStorage.removeItem('userTicketData');
+                    window.location.reload();
                     return;
                 }
                 
-                ticketResultDiv.innerHTML = ''; 
-                
                 const formattedValidity = `${jadwal.tanggal}, Pukul ${jadwal.jam}`;
-
-                // Variabel `ticketCard` sekarang mencakup semua elemen, termasuk hak cipta
-                const ticketCard = `
+                const ticketHTML = `
                     <div class="card" id="ticket-card">
                         <div class="row g-0">
                             <div class="col-sm-5 d-flex justify-content-center align-items-center">
@@ -178,11 +168,9 @@
                                     <p class="mt-3"><strong>Lokasi:</strong><br>${jadwal.bioskop}</p>
                                     <p class="mt-2"><strong>Berlaku Pada:</strong><br>${formattedValidity}</p>
                                     <p class="text-success fw-bold mt-3">STATUS: VALID</p>
-
                                     <p class="text-muted" style="font-size: 0.8rem;">
                                         Silahkan scan QR TIKET ini di meja Kios pemesanan tiket pada bioskop tersebut.
                                     </p>
-
                                 </div>
                             </div>
                         </div>
@@ -190,17 +178,16 @@
                     <div class="d-grid mt-3">
                         <a class="btn btn-light fw-bold" id="downloadLink">Unduh Tiket Digital (.PNG)</a>
                     </div>
-
+                    <div id="status-message"></div>
                     <div class="text-center text-white-50 mt-3" style="font-size: 0.8rem;">
-                        &copy; ${new Date().getFullYear()} Tiket Bioskop Digital Gratis -  Made by: ridhosandhika.
+                        &copy; ${new Date().getFullYear()} Tiket Bioskop Digital Gratis - Made by: ridhosandhika.
                     </div>
                 `;
-                ticketResultDiv.innerHTML = ticketCard;
+                ticketResultDiv.innerHTML = ticketHTML;
 
                 document.getElementById('downloadLink').addEventListener('click', () => {
                     html2canvas(document.getElementById('ticket-card'), { 
-                        backgroundColor: null,
-                        scale: 2
+                        backgroundColor: null, scale: 2
                     }).then(canvas => {
                         const link = document.createElement('a');
                         link.download = `Tiket-${name.replace(/\s+/g, '-')}-${movie.replace(/\s+/g, '-')}.png`;
@@ -208,7 +195,76 @@
                         link.click();
                     });
                 });
+            };
+
+            const checkExistingTicket = () => {
+                const storedDataJSON = localStorage.getItem('userTicketData');
+                if (!storedDataJSON) {
+                    formContainer.style.display = 'block';
+                    return;
+                }
+
+                const storedData = JSON.parse(storedDataJSON);
+                const generationTime = storedData.timestamp;
+                const now = new Date().getTime();
+                const thirtyDaysInMillis = 30 * 24 * 60 * 60 * 1000;
+
+                if (now - generationTime < thirtyDaysInMillis) {
+                    formContainer.style.display = 'none';
+                    displayTicket(storedData.movie, storedData.name, storedData.quantity);
+                    
+                    const remainingTime = thirtyDaysInMillis - (now - generationTime);
+                    const remainingDays = Math.ceil(remainingTime / (1000 * 60 * 60 * 24));
+                    
+                    const statusMessageDiv = document.getElementById('status-message');
+                    statusMessageDiv.innerHTML = `
+                        <div class="alert alert-info mt-3">
+                            Anda sudah klaim tiket. Anda dapat klaim tiket baru lagi dalam <strong>${remainingDays} hari</strong>.
+                        </div>
+                    `;
+                } else {
+                    localStorage.removeItem('userTicketData');
+                    formContainer.style.display = 'block';
+                }
+            };
+
+            generateBtn.addEventListener('click', () => {
+                const movie = movieSelect.value;
+                const name = nameInput.value.trim();
+                const quantity = parseInt(quantityInput.value);
+
+                if (!movie || !name || !quantity) {
+                    alert('Harap isi semua kolom!');
+                    return;
+                }
+
+                // --- VALIDASI JAVASCRIPT DI SINI ---
+                if (quantity < 1 || quantity > 3) {
+                    alert('Jumlah tiket yang di klaim maximal 3 tiket.');
+                    return; // Hentikan proses jika tidak valid
+                }
+                
+                const dataToStore = {
+                    movie: movie,
+                    name: name,
+                    quantity: quantity,
+                    timestamp: new Date().getTime()
+                };
+
+                localStorage.setItem('userTicketData', JSON.stringify(dataToStore));
+
+                formContainer.style.display = 'none';
+                displayTicket(movie, name, quantity);
+                
+                const statusMessageDiv = document.getElementById('status-message');
+                statusMessageDiv.innerHTML = `
+                    <div class="alert alert-success mt-3">
+                        Tiket berhasil klaim! Anda baru bisa klaim tiket lagi setelah 1 bulan.
+                    </div>
+                `;
             });
+
+            checkExistingTicket();
         });
     </script>
 </body>
